@@ -17,13 +17,13 @@ jobs:
           script: |
             const fs = require('fs');
 
-            const pinnedRepos = [
-              { owner: 'wespreadjam', repo: 'jam-nodes' },
-              { owner: 'jia-seed', repo: 'asillios-limiter' },
-              { owner: 'wespreadjam', repo: 'jam-discord-bot' },
-              { owner: 'jia-seed', repo: 'backend-dev-notes' },
-              { owner: 'NextTechOKE', repo: 'Hologlass' },
-              { owner: 'jia-seed', repo: 'DIATOS-intel-ai' },
+            const repos = [
+            { owner: 'wespreadjam', repo: 'jam-nodes' },
+            { owner: 'jia-seed', repo: 'asillios-limiter' },
+            { owner: 'jia-seed', repo: 'jiavis' },
+            { owner: 'wespreadjam', repo: 'jam-discord-bot' },
+            { owner: 'jia-seed', repo: 'jiawdbots' },
+            { owner: 'jia-seed', repo: 'DIATOS-intel-ai' },
             ];
 
             let totalStars = 0;
