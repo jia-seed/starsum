@@ -22,16 +22,16 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
 
   return (
     <div className="space-y-3">
-      <label className="text-sm font-medium text-text-muted">Color</label>
+      <label className="text-sm text-neutral-500">color</label>
       <div className="flex flex-wrap gap-2">
         {BADGE_COLORS.map((color) => (
           <button
             key={color.value}
             onClick={() => onChange(color.value)}
-            className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 border ${
               value === color.value
-                ? "ring-2 ring-accent ring-offset-2 ring-offset-background"
-                : "hover:opacity-80"
+                ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-black border-transparent"
+                : "border-transparent hover:opacity-80"
             }`}
             style={{
               backgroundColor:
@@ -50,7 +50,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
       <div className="flex items-center gap-2">
         <input
           type="text"
-          placeholder="Custom hex (e.g. ff69b4)"
+          placeholder="custom hex (e.g. ff69b4)"
           value={
             !BADGE_COLORS.some((c) => c.value === value) ? value : customHex
           }
@@ -61,7 +61,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               onChange(hex);
             }
           }}
-          className="px-3 py-1.5 bg-background border border-border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent w-48"
+          className="px-3 py-1.5 bg-black border border-neutral-800 rounded-md text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-52 transition-all duration-300"
         />
       </div>
     </div>

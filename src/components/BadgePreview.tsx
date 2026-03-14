@@ -24,7 +24,7 @@ export default function BadgePreview({
         className="h-8"
         key={badgeUrl}
       />
-      <code className="text-xs text-text-muted bg-background px-3 py-2 rounded-lg break-all max-w-full block text-center">
+      <code className="text-xs text-neutral-500 bg-[#0d1117] px-4 py-2 rounded-lg break-all max-w-full block text-center border border-neutral-800 font-mono">
         {`![Total Stars](${badgeUrl})`}
       </code>
     </div>

@@ -66,7 +66,13 @@ export default function DashboardClient() {
     const res = await fetch("/api/github/create-pr", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mode, color, style, totalStars, repos: activeRepos }),
+      body: JSON.stringify({
+        mode,
+        color,
+        style,
+        totalStars,
+        repos: activeRepos,
+      }),
     });
 
     const data = await res.json();
@@ -82,44 +88,48 @@ export default function DashboardClient() {
   if (!session) return null;
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-12 space-y-8">
+    <main className="max-w-3xl mx-auto px-4 py-12 space-y-6">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           {session.user.image && (
             <Image
               src={session.user.image}
               alt={session.user.name || ""}
-              width={48}
-              height={48}
+              width={40}
+              height={40}
               className="rounded-full"
             />
           )}
           <div>
-            <h1 className="text-2xl font-bold">{session.user.name}</h1>
-            <p className="text-text-muted">@{session.user.login}</p>
+            <h1 className="text-xl font-medium">{session.user.name}</h1>
+            <p className="text-sm text-neutral-400">@{session.user.login}</p>
           </div>
         </div>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="text-sm text-text-muted hover:text-foreground transition-colors"
+          className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
         >
-          Sign out
+          sign out
         </button>
       </header>
 
-      <section className="bg-surface rounded-xl p-6 border border-border">
-        <h2 className="text-lg font-semibold mb-4">Badge Preview</h2>
+      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50">
+        <h2 className="text-base font-medium mb-4 text-neutral-300">
+          badge preview
+        </h2>
         <BadgePreview totalStars={totalStars} color={color} style={style} />
       </section>
 
-      <section className="bg-surface rounded-xl p-6 border border-border space-y-6">
-        <h2 className="text-lg font-semibold">Customize</h2>
+      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 space-y-6">
+        <h2 className="text-base font-medium text-neutral-300">customize</h2>
         <ColorPicker value={color} onChange={setColor} />
         <StyleSelector value={style} onChange={setStyle} />
       </section>
 
-      <section className="bg-surface rounded-xl p-6 border border-border">
-        <h2 className="text-lg font-semibold mb-4">Repository Selection</h2>
+      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50">
+        <h2 className="text-base font-medium mb-4 text-neutral-300">
+          repository selection
+        </h2>
         <RepoSelector
           mode={mode}
           onModeChange={setMode}
@@ -131,19 +141,19 @@ export default function DashboardClient() {
         />
       </section>
 
-      <section className="bg-surface rounded-xl p-6 border border-border text-center space-y-4">
+      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
         {prUrl ? (
           <div className="space-y-3">
-            <p className="text-green-400 font-semibold">
-              PR created successfully!
+            <p className="text-teal-400 font-medium">
+              pr created successfully!
             </p>
             <a
               href={prUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-6 py-3 bg-accent text-black rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              className="inline-block px-6 py-3 bg-teal-900 text-white rounded-full font-medium border border-teal-700 hover:bg-teal-800 hover:border-teal-500 transition-all duration-300"
             >
-              View Pull Request
+              view pull request
             </a>
           </div>
         ) : (
@@ -153,13 +163,13 @@ export default function DashboardClient() {
               disabled={
                 creating || (mode === "custom" && selectedRepos.size === 0)
               }
-              className="px-8 py-4 bg-accent text-black rounded-lg font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-teal-900 text-white rounded-full font-medium text-base border border-teal-700 hover:bg-teal-800 hover:border-teal-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {creating ? "Creating PR..." : "Create Pull Request"}
+              {creating ? "creating pr..." : "create pull request"}
             </button>
-            <p className="text-sm text-text-muted">
-              This will create a PR to your{" "}
-              <code className="bg-background px-1 rounded">
+            <p className="text-sm text-neutral-500">
+              this will create a pr to your{" "}
+              <code className="text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded text-xs">
                 {session.user.login}/{session.user.login}
               </code>{" "}
               profile repo
