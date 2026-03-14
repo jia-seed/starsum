@@ -8,8 +8,8 @@ interface Repo {
 }
 
 interface RepoSelectorProps {
-  mode: "pinned" | "custom";
-  onModeChange: (mode: "pinned" | "custom") => void;
+  mode: "pinned" | "all" | "custom";
+  onModeChange: (mode: "pinned" | "all" | "custom") => void;
   pinnedRepos: Repo[];
   publicRepos: Repo[];
   selectedRepos: Set<string>;
@@ -44,30 +44,57 @@ export default function RepoSelector({
     );
   }
 
+  const allStars = publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
+
+  const activeButton =
+    "bg-teal-900 text-white border-teal-700";
+  const inactiveButton =
+    "bg-black text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700";
+
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => onModeChange("pinned")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 border ${
-            mode === "pinned"
-              ? "bg-teal-900 text-white border-teal-700"
-              : "bg-black text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700"
+            mode === "pinned" ? activeButton : inactiveButton
           }`}
         >
           pinned repos ({pinnedRepos.length})
         </button>
         <button
+          onClick={() => onModeChange("all")}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 border ${
+            mode === "all" ? activeButton : inactiveButton
+          }`}
+        >
+          all repos ({publicRepos.length})
+        </button>
+        <button
           onClick={() => onModeChange("custom")}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 border ${
-            mode === "custom"
-              ? "bg-teal-900 text-white border-teal-700"
-              : "bg-black text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700"
+            mode === "custom" ? activeButton : inactiveButton
           }`}
         >
           custom selection
         </button>
       </div>
+
+      {mode === "all" && (
+        <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-800 bg-black">
+          <div>
+            <p className="text-sm font-medium text-neutral-200">
+              {publicRepos.length} repos across your account
+            </p>
+            <p className="text-xs text-neutral-500 mt-0.5">
+              aggregates stars from every public repo you own
+            </p>
+          </div>
+          <span className="text-teal-400 font-medium text-lg shrink-0 ml-4">
+            {allStars.toLocaleString()} ★
+          </span>
+        </div>
+      )}
 
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {mode === "pinned" ? (
@@ -81,6 +108,10 @@ export default function RepoSelector({
               <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
             ))
           )
+        ) : mode === "all" ? (
+          publicRepos.map((repo) => (
+            <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
+          ))
         ) : (
           publicRepos.map((repo) => {
             const fullName = `${repo.owner}/${repo.name}`;

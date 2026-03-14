@@ -20,7 +20,7 @@ export default function DashboardClient() {
   const { data: session } = useSession();
   const [pinnedRepos, setPinnedRepos] = useState<Repo[]>([]);
   const [publicRepos, setPublicRepos] = useState<Repo[]>([]);
-  const [mode, setMode] = useState<"pinned" | "custom">("pinned");
+  const [mode, setMode] = useState<"pinned" | "all" | "custom">("pinned");
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
   const [color, setColor] = useState("yellow");
   const [style, setStyle] = useState("for-the-badge");
@@ -45,6 +45,9 @@ export default function DashboardClient() {
   const totalStars = useMemo(() => {
     if (mode === "pinned") {
       return pinnedRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
+    }
+    if (mode === "all") {
+      return publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
     }
     return publicRepos
       .filter((r) => selectedRepos.has(`${r.owner}/${r.name}`))

@@ -1,5 +1,5 @@
 interface WorkflowOptions {
-  mode: "pinned" | "custom";
+  mode: "pinned" | "all" | "custom";
   color: string;
   style: string;
   repos?: Array<{ owner: string; name: string }>;
@@ -7,10 +7,15 @@ interface WorkflowOptions {
 
 export function generateWorkflow(options: WorkflowOptions): string {
   const { mode, color, style, repos } = options;
-  const script =
-    mode === "pinned"
-      ? generatePinnedScript(color, style)
-      : generateCustomScript(color, style, repos || []);
+  let script: string;
+
+  if (mode === "pinned") {
+    script = generatePinnedScript(color, style);
+  } else if (mode === "all") {
+    script = generateAllReposScript(color, style);
+  } else {
+    script = generateCustomScript(color, style, repos || []);
+  }
 
   return `name: Update Total Stars
 
@@ -67,6 +72,33 @@ for (const repo of pinnedRepos) {
 }
 
 console.log(\`total: \${totalStars}\`);
+
+let readme = fs.readFileSync('README.md', 'utf8');
+readme = readme.replace(
+  /<!--STARS_START-->[\\s\\S]*?<!--STARS_END-->/,
+  \`<!--STARS_START-->\\n![Total Stars](https://img.shields.io/badge/total__stars-\${totalStars}-${color}?style=${style}&logo=github)\\n<!--STARS_END-->\`
+);
+fs.writeFileSync('README.md', readme);`;
+}
+
+function generateAllReposScript(color: string, style: string): string {
+  return `const fs = require('fs');
+
+const allRepos = await github.paginate(github.rest.repos.listForUser, {
+  username: '\${{ github.repository_owner }}',
+  type: 'owner',
+  per_page: 100,
+});
+
+let totalStars = 0;
+for (const repo of allRepos) {
+  totalStars += repo.stargazers_count;
+  if (repo.stargazers_count > 0) {
+    console.log(\`\${repo.full_name}: \${repo.stargazers_count}\`);
+  }
+}
+
+console.log(\`total across \${allRepos.length} repos: \${totalStars}\`);
 
 let readme = fs.readFileSync('README.md', 'utf8');
 readme = readme.replace(

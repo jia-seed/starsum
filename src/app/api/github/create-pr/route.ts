@@ -5,7 +5,7 @@ import { generateWorkflow } from "@/lib/workflow-template";
 import { generateBadgeMarkdown } from "@/lib/utils";
 
 interface CreatePRRequest {
-  mode: "pinned" | "custom";
+  mode: "pinned" | "all" | "custom";
   color: string;
   style: string;
   totalStars: number;
