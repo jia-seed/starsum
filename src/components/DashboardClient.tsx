@@ -147,14 +147,14 @@ export default function DashboardClient() {
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
         {prUrl ? (
           <div className="space-y-3">
-            <p className="text-teal-400 font-medium">
+            <p className="text-neutral-300 font-medium">
               pr created successfully!
             </p>
             <a
               href={prUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block px-6 py-3 bg-teal-900 text-white rounded-full font-medium border border-teal-700 hover:bg-teal-800 hover:border-teal-500 transition-all duration-300"
+              className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
             >
               view pull request
             </a>
@@ -166,16 +166,16 @@ export default function DashboardClient() {
               disabled={
                 creating || (mode === "custom" && selectedRepos.size === 0)
               }
-              className="px-8 py-3 bg-teal-900 text-white rounded-full font-medium text-base border border-teal-700 hover:bg-teal-800 hover:border-teal-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-8 py-3 bg-neutral-800 text-white rounded-full font-medium text-base border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {creating ? "creating pr..." : "create pull request"}
             </button>
             <p className="text-sm text-neutral-500">
-              this will create a pr to your{" "}
+              creates a pr to your{" "}
               <code className="text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded text-xs">
                 {session.user.login}/{session.user.login}
               </code>{" "}
-              profile repo
+              profile repo (creates it if you don&apos;t have one)
             </p>
             {error && <p className="text-red-400 text-sm">{error}</p>}
           </>

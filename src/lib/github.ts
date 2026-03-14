@@ -111,3 +111,17 @@ export async function checkProfileRepo(
     return { exists: false, hasReadme: false, defaultBranch: "main" };
   }
 }
+
+export async function createProfileRepo(
+  token: string,
+  login: string
+): Promise<{ defaultBranch: string }> {
+  const octokit = new Octokit({ auth: token });
+  const { data: repo } = await octokit.request("POST /user/repos", {
+    name: login,
+    description: `${login}'s GitHub profile`,
+    auto_init: true,
+    private: false,
+  });
+  return { defaultBranch: repo.default_branch };
+}

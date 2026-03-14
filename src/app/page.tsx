@@ -33,7 +33,7 @@ export default async function Home() {
         >
           <button
             type="submit"
-            className="px-8 py-3 bg-teal-900 text-white rounded-full font-medium text-base border border-teal-700 hover:bg-teal-800 hover:border-teal-500 transition-all duration-300 inline-flex items-center gap-3 mx-auto"
+            className="px-8 py-3 bg-neutral-800 text-white rounded-full font-medium text-base border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 inline-flex items-center gap-3 mx-auto"
           >
             <svg
               viewBox="0 0 24 24"

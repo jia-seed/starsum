@@ -18,7 +18,7 @@ export default function StyleSelector({ value, onChange }: StyleSelectorProps) {
             onClick={() => onChange(style.value)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 border ${
               value === style.value
-                ? "bg-teal-900 text-white border-teal-700"
+                ? "bg-neutral-800 text-white border-neutral-600"
                 : "bg-black text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700"
             }`}
           >

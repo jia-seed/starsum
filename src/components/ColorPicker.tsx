@@ -30,12 +30,12 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
             onClick={() => onChange(color.value)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 border ${
               value === color.value
-                ? "ring-2 ring-teal-500 ring-offset-2 ring-offset-black border-transparent"
+                ? "ring-2 ring-neutral-500 ring-offset-2 ring-offset-black border-transparent"
                 : "border-transparent hover:opacity-80"
             }`}
             style={{
               backgroundColor:
-                color.value.length === 6
+                /^[0-9a-fA-F]{6}$/.test(color.value)
                   ? `#${color.value}`
                   : COLOR_MAP[color.value] || color.value,
               color: ["yellow", "orange", "brightgreen"].includes(color.value)
@@ -61,7 +61,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               onChange(hex);
             }
           }}
-          className="px-3 py-1.5 bg-black border border-neutral-800 rounded-md text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent w-52 transition-all duration-300"
+          className="px-3 py-1.5 bg-black border border-neutral-800 rounded-md text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent w-52 transition-all duration-300"
         />
       </div>
     </div>

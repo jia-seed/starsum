@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getOctokit, checkProfileRepo } from "@/lib/github";
+import { getOctokit, checkProfileRepo, createProfileRepo } from "@/lib/github";
 import { generateWorkflow } from "@/lib/workflow-template";
 import { generateBadgeMarkdown } from "@/lib/utils";
 
@@ -23,15 +23,20 @@ export async function POST(request: NextRequest) {
   const login = session.user.login;
   const token = session.accessToken;
 
-  const profileRepo = await checkProfileRepo(token, login);
+  let profileRepo = await checkProfileRepo(token, login);
   if (!profileRepo.exists) {
-    return NextResponse.json(
-      {
-        error: "Profile repo not found",
-        message: `You need a repo named "${login}/${login}" to use this feature. Create it on GitHub first.`,
-      },
-      { status: 404 }
-    );
+    try {
+      const created = await createProfileRepo(token, login);
+      profileRepo = { exists: true, hasReadme: true, defaultBranch: created.defaultBranch };
+    } catch (createErr: any) {
+      return NextResponse.json(
+        {
+          error: "Failed to create profile repo",
+          message: createErr.message,
+        },
+        { status: 500 }
+      );
+    }
   }
 
   const badgeMd = generateBadgeMarkdown(totalStars, color, style);

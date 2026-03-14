@@ -47,7 +47,7 @@ export default function RepoSelector({
   const allStars = publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
 
   const activeButton =
-    "bg-teal-900 text-white border-teal-700";
+    "bg-neutral-800 text-white border-neutral-600";
   const inactiveButton =
     "bg-black text-neutral-400 border-neutral-800 hover:text-white hover:border-neutral-700";
 
@@ -90,7 +90,7 @@ export default function RepoSelector({
               aggregates stars from every public repo you own
             </p>
           </div>
-          <span className="text-teal-400 font-medium text-lg shrink-0 ml-4">
+          <span className="text-neutral-400 font-medium text-lg shrink-0 ml-4">
             {allStars.toLocaleString()} ★
           </span>
         </div>
@@ -149,7 +149,7 @@ function RepoCard({
         selectable ? "cursor-pointer" : ""
       } ${
         selected
-          ? "border-teal-700 bg-teal-900/20"
+          ? "border-neutral-600 bg-neutral-800/20"
           : "border-neutral-800 hover:border-neutral-700 bg-black"
       }`}
     >
@@ -163,7 +163,7 @@ function RepoCard({
           </p>
         )}
       </div>
-      <span className="text-teal-400 font-medium text-sm ml-4 shrink-0">
+      <span className="text-neutral-400 font-medium text-sm ml-4 shrink-0">
         {repo.stargazerCount.toLocaleString()} ★
       </span>
     </div>
