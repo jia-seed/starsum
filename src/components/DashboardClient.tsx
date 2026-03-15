@@ -28,7 +28,7 @@ export default function DashboardClient() {
   const [creating, setCreating] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [repoOpen, setRepoOpen] = useState(false);
-  const [prUrl, setPrUrl] = useState<string | null>(null);
+  const [editorUrl, setEditorUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,10 +56,10 @@ export default function DashboardClient() {
       .reduce((sum, r) => sum + r.stargazerCount, 0);
   }, [mode, pinnedRepos, publicRepos, selectedRepos]);
 
-  async function handleCreatePR() {
+  async function handleAddToProfile() {
     setCreating(true);
     setError(null);
-    setPrUrl(null);
+    setEditorUrl(null);
 
     const activeRepos =
       mode === "custom"
@@ -68,7 +68,7 @@ export default function DashboardClient() {
             .map((r) => ({ owner: r.owner, name: r.name }))
         : undefined;
 
-    const res = await fetch("/api/github/create-pr", {
+    const res = await fetch("/api/github/editor-links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -82,8 +82,21 @@ export default function DashboardClient() {
 
     const data = await res.json();
     if (data.success) {
-      setPrUrl(data.prUrl || null);
-      if (data.message) setError(data.message);
+      // Open GitHub editor directly with the new README content pre-filled
+      const login = data.login;
+      const branch = data.defaultBranch;
+      if (data.readmeExists) {
+        // For existing READMEs, open the edit page
+        setEditorUrl(`https://github.com/${login}/${login}/edit/${branch}/README.md`);
+      } else {
+        // For new READMEs, pre-fill content via URL params
+        const params = new URLSearchParams({
+          filename: "README.md",
+          value: data.readmeContent,
+          message: "Add StarSum badge",
+        });
+        setEditorUrl(`https://github.com/${login}/${login}/new/${branch}?${params.toString()}`);
+      }
     } else {
       setError(data.message || data.error);
     }
@@ -191,33 +204,39 @@ export default function DashboardClient() {
       </section>
 
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
-        {prUrl ? (
+        {editorUrl ? (
           <div className="space-y-3">
-            <p className="text-neutral-300 font-medium">
-              pr created successfully!
-            </p>
             <a
-              href={prUrl}
+              href={editorUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
             >
-              review and merge
+              edit README.md on github
             </a>
+            <p className="text-sm text-neutral-500">
+              review the changes and commit
+            </p>
+            <button
+              onClick={() => setEditorUrl(null)}
+              className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
+            >
+              start over
+            </button>
           </div>
         ) : (
           <>
             <button
-              onClick={handleCreatePR}
+              onClick={handleAddToProfile}
               disabled={
                 creating || (mode === "custom" && selectedRepos.size === 0)
               }
               className="px-8 py-3 bg-neutral-800 text-white rounded-full font-medium text-base border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {creating ? "creating pr..." : "add to profile"}
+              {creating ? "preparing..." : "add to profile"}
             </button>
             <p className="text-sm text-neutral-500">
-              creates a pr to your{" "}
+              opens the github editor for your{" "}
               <code className="text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded text-xs">
                 {session.user.login}/{session.user.login}
               </code>{" "}
