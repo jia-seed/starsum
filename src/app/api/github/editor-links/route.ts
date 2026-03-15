@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
   // Check if README exists and get its content
   let readmeExists = false;
   let readmeContent = "";
+  let originalReadme = "";
   try {
     const { data } = await octokit.request(
       "GET /repos/{owner}/{repo}/contents/{path}",
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         data.content as string,
         "base64"
       ).toString("utf-8");
+      originalReadme = currentReadme;
       const markerRegex = /<!--STARS_START-->[\s\S]*?<!--STARS_END-->/;
       if (markerRegex.test(currentReadme)) {
         readmeContent = currentReadme.replace(markerRegex, badgeSnippet);
@@ -128,6 +130,7 @@ export async function POST(request: NextRequest) {
     login,
     defaultBranch: branch,
     readmeContent,
+    originalReadme,
     readmeExists,
     workflowContent: workflowYaml,
     workflowExists,

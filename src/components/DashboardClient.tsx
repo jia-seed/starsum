@@ -7,6 +7,7 @@ import BadgePreview from "./BadgePreview";
 import RepoSelector from "./RepoSelector";
 import ColorPicker from "./ColorPicker";
 import StyleSelector from "./StyleSelector";
+import DiffPreview from "./DiffPreview";
 
 interface Repo {
   name: string;
@@ -26,9 +27,15 @@ export default function DashboardClient() {
   const [style, setStyle] = useState("for-the-badge");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [committing, setCommitting] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [repoOpen, setRepoOpen] = useState(false);
-  const [editorUrl, setEditorUrl] = useState<string | null>(null);
+  const [diffData, setDiffData] = useState<{
+    originalReadme: string;
+    readmeContent: string;
+    workflowContent: string;
+  } | null>(null);
+  const [commitUrl, setCommitUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -59,7 +66,8 @@ export default function DashboardClient() {
   async function handleAddToProfile() {
     setCreating(true);
     setError(null);
-    setEditorUrl(null);
+    setDiffData(null);
+    setCommitUrl(null);
 
     const activeRepos =
       mode === "custom"
@@ -82,25 +90,39 @@ export default function DashboardClient() {
 
     const data = await res.json();
     if (data.success) {
-      // Open GitHub editor directly with the new README content pre-filled
-      const login = data.login;
-      const branch = data.defaultBranch;
-      if (data.readmeExists) {
-        // For existing READMEs, open the edit page
-        setEditorUrl(`https://github.com/${login}/${login}/edit/${branch}/README.md`);
-      } else {
-        // For new READMEs, pre-fill content via URL params
-        const params = new URLSearchParams({
-          filename: "README.md",
-          value: data.readmeContent,
-          message: "Add StarSum badge",
-        });
-        setEditorUrl(`https://github.com/${login}/${login}/new/${branch}?${params.toString()}`);
-      }
+      setDiffData({
+        originalReadme: data.originalReadme || "",
+        readmeContent: data.readmeContent,
+        workflowContent: data.workflowContent,
+      });
     } else {
       setError(data.message || data.error);
     }
     setCreating(false);
+  }
+
+  async function handleCommit() {
+    if (!diffData) return;
+    setCommitting(true);
+    setError(null);
+
+    const res = await fetch("/api/github/commit-readme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        readmeContent: diffData.readmeContent,
+        workflowContent: diffData.workflowContent,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      setCommitUrl(data.commitUrl);
+      setDiffData(null);
+    } else {
+      setError(data.message || data.error);
+    }
+    setCommitting(false);
   }
 
   if (!session) return null;
@@ -204,25 +226,51 @@ export default function DashboardClient() {
       </section>
 
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
-        {editorUrl ? (
+        {commitUrl ? (
           <div className="space-y-3">
             <a
-              href={editorUrl}
+              href={commitUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
             >
-              edit README.md on github
+              view changes on github
             </a>
             <p className="text-sm text-neutral-500">
-              review the changes and commit
+              badge committed to your profile repo
             </p>
             <button
-              onClick={() => setEditorUrl(null)}
+              onClick={() => {
+                setCommitUrl(null);
+                setDiffData(null);
+              }}
               className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
             >
               start over
             </button>
+          </div>
+        ) : diffData ? (
+          <div className="space-y-4">
+            <DiffPreview
+              original={diffData.originalReadme}
+              updated={diffData.readmeContent}
+            />
+            <div className="flex items-center justify-center gap-3">
+              <button
+                onClick={handleCommit}
+                disabled={committing}
+                className="px-6 py-3 bg-green-900/40 text-green-300 rounded-full font-medium border border-green-700/40 hover:bg-green-800/40 hover:border-green-600/40 transition-all duration-300 disabled:opacity-40"
+              >
+                {committing ? "committing..." : "commit to github"}
+              </button>
+              <button
+                onClick={() => setDiffData(null)}
+                className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
+              >
+                cancel
+              </button>
+            </div>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
           </div>
         ) : (
           <>
@@ -236,7 +284,7 @@ export default function DashboardClient() {
               {creating ? "preparing..." : "add to profile"}
             </button>
             <p className="text-sm text-neutral-500">
-              opens the github editor for your{" "}
+              preview and commit changes to your{" "}
               <code className="text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded text-xs">
                 {session.user.login}/{session.user.login}
               </code>{" "}
