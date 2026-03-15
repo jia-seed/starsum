@@ -51,9 +51,10 @@ export async function fetchPublicRepos(
   login: string
 ): Promise<Repo[]> {
   const octokit = new Octokit({ auth: token });
-  const repos: Repo[] = [];
-  let page = 1;
+  const repoMap = new Map<string, Repo>();
 
+  // Fetch owned repos
+  let page = 1;
   while (true) {
     const response = await octokit.request("GET /users/{username}/repos", {
       username: login,
@@ -65,7 +66,8 @@ export async function fetchPublicRepos(
     });
 
     for (const repo of response.data) {
-      repos.push({
+      const key = `${repo.owner.login}/${repo.name}`;
+      repoMap.set(key, {
         name: repo.name,
         owner: repo.owner.login,
         stargazerCount: repo.stargazers_count ?? 0,
@@ -78,7 +80,37 @@ export async function fetchPublicRepos(
     page++;
   }
 
+  // Fetch repos the user collaborates on
+  page = 1;
+  while (true) {
+    const response = await octokit.request("GET /user/repos", {
+      type: "member",
+      per_page: 100,
+      page,
+      sort: "updated",
+      direction: "desc",
+    });
+
+    for (const repo of response.data) {
+      if (repo.private) continue;
+      const key = `${repo.owner.login}/${repo.name}`;
+      if (!repoMap.has(key)) {
+        repoMap.set(key, {
+          name: repo.name,
+          owner: repo.owner.login,
+          stargazerCount: repo.stargazers_count ?? 0,
+          description: repo.description ?? null,
+          url: repo.html_url ?? "",
+        });
+      }
+    }
+
+    if (response.data.length < 100) break;
+    page++;
+  }
+
   // Sort by stars descending
+  const repos = Array.from(repoMap.values());
   repos.sort((a, b) => b.stargazerCount - a.stargazerCount);
   return repos;
 }

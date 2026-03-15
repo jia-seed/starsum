@@ -87,7 +87,7 @@ export default function RepoSelector({
               {publicRepos.length} repos across your account
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
-              aggregates stars from every public repo you own
+              aggregates stars from every public repo you own or contribute to
             </p>
           </div>
           <span className="text-neutral-400 font-medium text-lg shrink-0 ml-4">

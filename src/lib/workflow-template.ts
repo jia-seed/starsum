@@ -84,26 +84,45 @@ fs.writeFileSync('README.md', readme);`;
 function generateAllReposScript(color: string, style: string): string {
   return `const fs = require('fs');
 
-const allRepos = await github.paginate(github.rest.repos.listForUser, {
+const seen = new Set();
+let totalStars = 0;
+
+// Owned repos
+const ownedRepos = await github.paginate(github.rest.repos.listForUser, {
   username: '\${{ github.repository_owner }}',
   type: 'owner',
   per_page: 100,
 });
 
-let totalStars = 0;
-for (const repo of allRepos) {
+for (const repo of ownedRepos) {
+  seen.add(repo.full_name);
   totalStars += repo.stargazers_count;
   if (repo.stargazers_count > 0) {
     console.log(\`\${repo.full_name}: \${repo.stargazers_count}\`);
   }
 }
 
-console.log(\`total across \${allRepos.length} repos: \${totalStars}\`);
+// Contributed repos (collaborator/member)
+const memberRepos = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
+  type: 'member',
+  per_page: 100,
+});
+
+for (const repo of memberRepos) {
+  if (repo.private || seen.has(repo.full_name)) continue;
+  seen.add(repo.full_name);
+  totalStars += repo.stargazers_count;
+  if (repo.stargazers_count > 0) {
+    console.log(\`\${repo.full_name}: \${repo.stargazers_count}\`);
+  }
+}
+
+console.log(\`total across \${seen.size} repos: \${totalStars}\`);
 
 let readme = fs.readFileSync('README.md', 'utf8');
 readme = readme.replace(
   /<!--STARS_START-->[\\s\\S]*?<!--STARS_END-->/,
-  \`<!--STARS_START-->\\n![Total Stars](https://img.shields.io/badge/Total__Stars__Across__Owned__Repos-\${totalStars}-${color}?style=${style}&logo=github)\\n<!--STARS_END-->\`
+  \`<!--STARS_START-->\\n![Total Stars](https://img.shields.io/badge/total__stars-\${totalStars}-${color}?style=${style}&logo=github)\\n<!--STARS_END-->\`
 );
 fs.writeFileSync('README.md', readme);`;
 }
