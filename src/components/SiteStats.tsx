@@ -102,6 +102,11 @@ export default function SiteStats() {
                 />
               )}
               <span className="text-white/50 truncate">{user.login}</span>
+              {user.stars > 0 && (
+                <span className="text-yellow-500/70 flex-shrink-0">
+                  {user.stars.toLocaleString()}
+                </span>
+              )}
               <span className="text-white/25 ml-auto flex-shrink-0 whitespace-nowrap">
                 {user.connectedAt ? timeAgo(user.connectedAt) : ""}
               </span>
