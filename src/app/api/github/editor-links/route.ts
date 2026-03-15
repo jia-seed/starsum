@@ -12,6 +12,7 @@ interface EditorLinksRequest {
   style: string;
   totalStars: number;
   repos?: Array<{ owner: string; name: string }>;
+  extraRepos?: Array<{ owner: string; name: string }>;
 }
 
 export async function POST(request: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body: EditorLinksRequest = await request.json();
-  const { mode, color, style, totalStars, repos } = body;
+  const { mode, color, style, totalStars, repos, extraRepos } = body;
   const login = session.user.login;
   const token = session.accessToken;
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
 
   const badgeMd = generateBadgeMarkdown(totalStars, color, style, mode);
   const badgeSnippet = `<!--STARS_START-->\n${badgeMd}\n<!--STARS_END-->`;
-  const workflowYaml = generateWorkflow({ mode, color, style, repos });
+  const workflowYaml = generateWorkflow({ mode, color, style, repos, extraRepos });
   const octokit = new Octokit({ auth: token });
   const branch = profileRepo.defaultBranch;
 

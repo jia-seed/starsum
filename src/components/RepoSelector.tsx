@@ -17,6 +17,10 @@ interface RepoSelectorProps {
   selectedRepos: Set<string>;
   onSelectedChange: (selected: Set<string>) => void;
   loading: boolean;
+  login: string;
+  extraRepos: Repo[];
+  onAddRepo: (fullName: string) => void;
+  onRemoveRepo: (fullName: string) => void;
 }
 
 export default function RepoSelector({
@@ -27,8 +31,13 @@ export default function RepoSelector({
   selectedRepos,
   onSelectedChange,
   loading,
+  login,
+  extraRepos,
+  onAddRepo,
+  onRemoveRepo,
 }: RepoSelectorProps) {
   const [search, setSearch] = useState("");
+  const [repoInput, setRepoInput] = useState("");
 
   function toggleRepo(fullName: string) {
     const next = new Set(selectedRepos);
@@ -48,7 +57,12 @@ export default function RepoSelector({
     );
   }
 
-  const allStars = publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
+  const allStars =
+    publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0) +
+    extraRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
+
+  const ownedRepos = publicRepos.filter((r) => r.owner === login);
+  const contributedRepos = publicRepos.filter((r) => r.owner !== login);
 
   const activeButton =
     "bg-neutral-800 text-white border-neutral-600";
@@ -72,7 +86,7 @@ export default function RepoSelector({
             mode === "all" ? activeButton : inactiveButton
           }`}
         >
-          all repos ({publicRepos.length})
+          overall ({publicRepos.length + extraRepos.length})
         </button>
         <button
           onClick={() => onModeChange("custom")}
@@ -98,7 +112,7 @@ export default function RepoSelector({
         <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-800 bg-black">
           <div>
             <p className="text-sm font-medium text-neutral-200">
-              {publicRepos.length} repos across your account
+              {publicRepos.length + extraRepos.length} repos across your account
             </p>
             <p className="text-xs text-neutral-500 mt-0.5">
               aggregates stars from every public repo you own or contribute to
@@ -123,9 +137,36 @@ export default function RepoSelector({
             ))
           )
         ) : mode === "all" ? (
-          publicRepos.map((repo) => (
-            <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
-          ))
+          <>
+            {ownedRepos.length > 0 && (
+              <>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider pt-1">
+                  your repos
+                </p>
+                {ownedRepos.map((repo) => (
+                  <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
+                ))}
+              </>
+            )}
+            {(contributedRepos.length > 0 || extraRepos.length > 0) && (
+              <>
+                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider pt-3">
+                  contributed
+                </p>
+                {contributedRepos.map((repo) => (
+                  <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
+                ))}
+                {extraRepos.map((repo) => (
+                  <RepoCard
+                    key={`${repo.owner}/${repo.name}`}
+                    repo={repo}
+                    removable
+                    onRemove={() => onRemoveRepo(`${repo.owner}/${repo.name}`)}
+                  />
+                ))}
+              </>
+            )}
+          </>
         ) : (
           publicRepos
             .filter((repo) => {
@@ -149,6 +190,35 @@ export default function RepoSelector({
             })
         )}
       </div>
+
+      {mode === "all" && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const trimmed = repoInput.trim();
+            if (trimmed && trimmed.includes("/")) {
+              onAddRepo(trimmed);
+              setRepoInput("");
+            }
+          }}
+          className="flex gap-2"
+        >
+          <input
+            type="text"
+            value={repoInput}
+            onChange={(e) => setRepoInput(e.target.value)}
+            placeholder="owner/repo"
+            className="flex-1 px-3 py-2 rounded-md text-sm bg-black border border-neutral-800 text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors duration-300"
+          />
+          <button
+            type="submit"
+            disabled={!repoInput.trim().includes("/")}
+            className="px-4 py-2 rounded-md text-sm font-medium bg-neutral-800 text-neutral-300 border border-neutral-700 hover:text-white hover:border-neutral-600 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            add repo
+          </button>
+        </form>
+      )}
     </div>
   );
 }
@@ -158,11 +228,15 @@ function RepoCard({
   selectable = false,
   selected = false,
   onToggle,
+  removable = false,
+  onRemove,
 }: {
   repo: Repo;
   selectable?: boolean;
   selected?: boolean;
   onToggle?: () => void;
+  removable?: boolean;
+  onRemove?: () => void;
 }) {
   return (
     <div
@@ -185,9 +259,23 @@ function RepoCard({
           </p>
         )}
       </div>
-      <span className="text-neutral-400 font-medium text-sm ml-4 shrink-0">
-        {repo.stargazerCount.toLocaleString()} ★
-      </span>
+      <div className="flex items-center gap-2 ml-4 shrink-0">
+        <span className="text-neutral-400 font-medium text-sm">
+          {repo.stargazerCount.toLocaleString()} ★
+        </span>
+        {removable && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove?.();
+            }}
+            className="text-neutral-600 hover:text-neutral-300 transition-colors duration-200 text-sm"
+            title="remove"
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   );
 }

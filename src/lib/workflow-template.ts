@@ -3,16 +3,17 @@ interface WorkflowOptions {
   color: string;
   style: string;
   repos?: Array<{ owner: string; name: string }>;
+  extraRepos?: Array<{ owner: string; name: string }>;
 }
 
 export function generateWorkflow(options: WorkflowOptions): string {
-  const { mode, color, style, repos } = options;
+  const { mode, color, style, repos, extraRepos } = options;
   let script: string;
 
   if (mode === "pinned") {
     script = generatePinnedScript(color, style);
   } else if (mode === "all") {
-    script = generateAllReposScript(color, style);
+    script = generateAllReposScript(color, style, extraRepos);
   } else {
     script = generateCustomScript(color, style, repos || []);
   }
@@ -81,7 +82,39 @@ readme = readme.replace(
 fs.writeFileSync('README.md', readme);`;
 }
 
-function generateAllReposScript(color: string, style: string): string {
+function generateAllReposScript(
+  color: string,
+  style: string,
+  extraRepos?: Array<{ owner: string; name: string }>
+): string {
+  let extraBlock = "";
+  if (extraRepos && extraRepos.length > 0) {
+    const repoList = extraRepos
+      .map((r) => `  { owner: '${r.owner}', repo: '${r.name}' }`)
+      .join(",\n");
+    extraBlock = `
+
+// Extra contributed repos
+const extraRepos = [
+${repoList}
+];
+
+for (const { owner, repo } of extraRepos) {
+  const key = \`\${owner}/\${repo}\`;
+  if (seen.has(key)) continue;
+  try {
+    const { data } = await github.rest.repos.get({ owner, repo });
+    seen.add(key);
+    totalStars += data.stargazers_count;
+    if (data.stargazers_count > 0) {
+      console.log(\`\${key}: \${data.stargazers_count}\`);
+    }
+  } catch (e) {
+    console.log(\`failed to fetch \${key}: \${e.message}\`);
+  }
+}`;
+  }
+
   return `const fs = require('fs');
 
 const seen = new Set();
@@ -115,7 +148,7 @@ for (const repo of memberRepos) {
   if (repo.stargazers_count > 0) {
     console.log(\`\${repo.full_name}: \${repo.stargazers_count}\`);
   }
-}
+}${extraBlock}
 
 console.log(\`total across \${seen.size} repos: \${totalStars}\`);
 

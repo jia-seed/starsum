@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import BadgePreview from "./BadgePreview";
 import RepoSelector from "./RepoSelector";
@@ -37,6 +37,7 @@ export default function DashboardClient() {
   } | null>(null);
   const [commitUrl, setCommitUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [extraRepos, setExtraRepos] = useState<Repo[]>([]);
 
   useEffect(() => {
     async function fetchRepos() {
@@ -56,12 +57,36 @@ export default function DashboardClient() {
       return pinnedRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
     }
     if (mode === "all") {
-      return publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0);
+      return (
+        publicRepos.reduce((sum, r) => sum + r.stargazerCount, 0) +
+        extraRepos.reduce((sum, r) => sum + r.stargazerCount, 0)
+      );
     }
     return publicRepos
       .filter((r) => selectedRepos.has(`${r.owner}/${r.name}`))
       .reduce((sum, r) => sum + r.stargazerCount, 0);
-  }, [mode, pinnedRepos, publicRepos, selectedRepos]);
+  }, [mode, pinnedRepos, publicRepos, selectedRepos, extraRepos]);
+
+  const handleAddRepo = useCallback(async (fullName: string) => {
+    const [owner, name] = fullName.split("/");
+    if (!owner || !name) return;
+    const already =
+      publicRepos.some((r) => r.owner === owner && r.name === name) ||
+      extraRepos.some((r) => r.owner === owner && r.name === name);
+    if (already) return;
+    const res = await fetch(
+      `/api/github/repo-info?owner=${encodeURIComponent(owner)}&name=${encodeURIComponent(name)}`
+    );
+    if (!res.ok) return;
+    const repo: Repo = await res.json();
+    setExtraRepos((prev) => [...prev, repo]);
+  }, [publicRepos, extraRepos]);
+
+  const handleRemoveRepo = useCallback((fullName: string) => {
+    setExtraRepos((prev) =>
+      prev.filter((r) => `${r.owner}/${r.name}` !== fullName)
+    );
+  }, []);
 
   async function handleAddToProfile() {
     setCreating(true);
@@ -76,6 +101,11 @@ export default function DashboardClient() {
             .map((r) => ({ owner: r.owner, name: r.name }))
         : undefined;
 
+    const extraReposList =
+      mode === "all" && extraRepos.length > 0
+        ? extraRepos.map((r) => ({ owner: r.owner, name: r.name }))
+        : undefined;
+
     const res = await fetch("/api/github/editor-links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,6 +115,7 @@ export default function DashboardClient() {
         style,
         totalStars,
         repos: activeRepos,
+        extraRepos: extraReposList,
       }),
     });
 
@@ -220,6 +251,10 @@ export default function DashboardClient() {
               selectedRepos={selectedRepos}
               onSelectedChange={setSelectedRepos}
               loading={loading}
+              login={session.user.login}
+              extraRepos={extraRepos}
+              onAddRepo={handleAddRepo}
+              onRemoveRepo={handleRemoveRepo}
             />
           </div>
         )}
