@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
       prNumber: pr.data.number,
     });
   } catch (error: any) {
-    if (error.message?.includes("Reference already exists")) {
+    if (error.message?.includes("Reference already exists") || error.message?.includes("Pull request already exists")) {
       try {
         const pr = await (octokit as any).createPullRequest({
           owner: login,
