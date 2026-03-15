@@ -4,7 +4,7 @@ export function generateBadgeUrl(
   style: string,
   mode?: "pinned" | "all" | "custom"
 ): string {
-  const label = mode === "all" ? "Total__Stars__Across__Owned__Repos" : "total__stars";
+  const label = "total__stars";
   return `https://img.shields.io/badge/${label}-${totalStars}-${color}?style=${style}&logo=github`;
 }
 
