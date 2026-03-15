@@ -21,8 +21,8 @@ export default async function Home() {
           </h1>
         </div>
         <p className="text-lg text-text-muted max-w-lg mx-auto leading-relaxed">
-          aggregate stars from your pinned repos. display a live-updating badge
-          on your github profile. set it up in 30 seconds.
+          add all your stars from every github repo you own or the pinned ones
+          with one button. it live updates!
         </p>
 
         <div className="flex justify-center">
