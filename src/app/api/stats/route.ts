@@ -37,21 +37,20 @@ export async function GET(req: NextRequest) {
   const activeVisitors = results[3] as number;
   const totalViews =
     (dedupResult === "OK" ? 1 : 0) + (Number(results[4]) || 0);
-  const uniqueGithub = results[5] as number;
-  const recentUsersRaw = (results[6] as string[]) || [];
-  const recentUsers = recentUsersRaw.map((entry) => {
-    try {
-      return JSON.parse(entry);
-    } catch {
-      return null;
-    }
-  }).filter(Boolean);
-
-  // Fetch connected users outside pipeline (hgetall returns parsed object)
+  // Use connected_users hash length as the count (stays in sync with the list)
   const connectedRaw = await redis.hgetall<Record<string, string>>("stats:connected_users") || {};
   const connectedUsers = Object.values(connectedRaw).map((entry) => {
     try {
       return typeof entry === "string" ? JSON.parse(entry) : entry;
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+  const uniqueGithub = connectedUsers.length;
+  const recentUsersRaw = (results[6] as string[]) || [];
+  const recentUsers = recentUsersRaw.map((entry) => {
+    try {
+      return JSON.parse(entry);
     } catch {
       return null;
     }
