@@ -2,6 +2,13 @@
 
 import { useEffect, useState, useCallback } from "react";
 
+interface ConnectedUser {
+  login: string;
+  stars: number;
+  avatar: string;
+  connectedAt: number;
+}
+
 interface RecentUser {
   login: string;
   stars: number;
@@ -13,7 +20,7 @@ interface Stats {
   activeVisitors: number;
   uniqueGithub: number;
   recentUsers: RecentUser[];
-  connectedUsers: RecentUser[];
+  connectedUsers: ConnectedUser[];
 }
 
 function getVisitorId(): string {
@@ -24,6 +31,17 @@ function getVisitorId(): string {
     sessionStorage.setItem("starsum_vid", vid);
   }
   return vid;
+}
+
+function timeAgo(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
 
 export default function SiteStats() {
@@ -71,7 +89,7 @@ export default function SiteStats() {
         >
           {stats.uniqueGithub} connected
           {showConnected && stats.connectedUsers.length > 0 && (
-            <div className="absolute top-full right-0 mt-2 rounded-xl bg-neutral-900/95 border border-white/10 px-3 py-2 backdrop-blur-sm text-xs text-white/60 space-y-1.5 min-w-[180px]">
+            <div className="absolute top-full right-0 mt-2 rounded-xl bg-neutral-900/95 border border-white/10 px-3 py-2.5 backdrop-blur-sm text-xs text-white/60 space-y-2 min-w-[220px]">
               {stats.connectedUsers.map((user) => (
                 <a
                   key={user.login}
@@ -84,15 +102,13 @@ export default function SiteStats() {
                     <img
                       src={user.avatar}
                       alt={user.login}
-                      className="w-4 h-4 rounded-full"
+                      className="w-4 h-4 rounded-full flex-shrink-0"
                     />
                   )}
-                  <span className="text-white/50">@{user.login}</span>
-                  {user.stars > 0 && (
-                    <span className="text-yellow-500/70 ml-auto">
-                      {user.stars.toLocaleString()}
-                    </span>
-                  )}
+                  <span className="text-white/50 truncate">{user.login}</span>
+                  <span className="text-white/25 ml-auto flex-shrink-0 whitespace-nowrap">
+                    {user.connectedAt ? timeAgo(user.connectedAt) : ""}
+                  </span>
                 </a>
               ))}
             </div>

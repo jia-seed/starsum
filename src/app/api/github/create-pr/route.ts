@@ -106,21 +106,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Track recent user who created a PR
-    const userEntry = JSON.stringify({
-      login,
-      stars: totalStars,
-      avatar: session.user.image || "",
-    });
     await redis.zadd("stats:recent_users", {
       score: Date.now(),
-      member: userEntry,
+      member: JSON.stringify({
+        login,
+        stars: totalStars,
+        avatar: session.user.image || "",
+      }),
     });
-    // Update connected user's star count
-    if (session.user.id) {
-      await redis.hset("stats:connected_users", {
-        [session.user.id]: userEntry,
-      });
-    }
+    // Update connected user's star count (preserve connectedAt)
+    const existing = await redis.hget<string>("stats:connected_users", login);
+    const parsed = existing ? (typeof existing === "string" ? JSON.parse(existing) : existing) : {};
+    await redis.hset("stats:connected_users", {
+      [login]: JSON.stringify({
+        login,
+        stars: totalStars,
+        avatar: session.user.image || "",
+        connectedAt: parsed.connectedAt || Date.now(),
+      }),
+    });
 
     return NextResponse.json({
       success: true,
@@ -150,20 +154,24 @@ export async function POST(request: NextRequest) {
         });
 
         // Track recent user who updated a PR
-        const updatedEntry = JSON.stringify({
-          login,
-          stars: totalStars,
-          avatar: session.user.image || "",
-        });
         await redis.zadd("stats:recent_users", {
           score: Date.now(),
-          member: updatedEntry,
+          member: JSON.stringify({
+            login,
+            stars: totalStars,
+            avatar: session.user.image || "",
+          }),
         });
-        if (session.user.id) {
-          await redis.hset("stats:connected_users", {
-            [session.user.id]: updatedEntry,
-          });
-        }
+        const existingUpdate = await redis.hget<string>("stats:connected_users", login);
+        const parsedUpdate = existingUpdate ? (typeof existingUpdate === "string" ? JSON.parse(existingUpdate) : existingUpdate) : {};
+        await redis.hset("stats:connected_users", {
+          [login]: JSON.stringify({
+            login,
+            stars: totalStars,
+            avatar: session.user.image || "",
+            connectedAt: parsedUpdate.connectedAt || Date.now(),
+          }),
+        });
 
         return NextResponse.json({
           success: true,

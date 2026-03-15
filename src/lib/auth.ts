@@ -33,15 +33,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, profile }) {
       if (user?.id) {
-        await redis.sadd("stats:unique_github", user.id);
         const login = (profile as { login?: string })?.login || user.name || "";
-        await redis.hset("stats:connected_users", {
-          [user.id]: JSON.stringify({
-            login,
-            avatar: user.image || "",
-            stars: 0,
-          }),
-        });
+        await redis.sadd("stats:unique_github", user.id);
+        // Check if user already exists in connected_users
+        const existing = await redis.hget<string>("stats:connected_users", login);
+        if (existing) {
+          // Keep existing entry (preserve stars and original connectedAt)
+          const parsed = typeof existing === "string" ? JSON.parse(existing) : existing;
+          await redis.hset("stats:connected_users", {
+            [login]: JSON.stringify({
+              ...parsed,
+              avatar: user.image || parsed.avatar || "",
+            }),
+          });
+        } else {
+          await redis.hset("stats:connected_users", {
+            [login]: JSON.stringify({
+              login,
+              avatar: user.image || "",
+              stars: 0,
+              connectedAt: Date.now(),
+            }),
+          });
+        }
       }
       return true;
     },
@@ -58,9 +72,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.accessToken = token.accessToken as string;
       if (token.login) {
         session.user.login = token.login as string;
-      }
-      if (token.sub) {
-        redis.sadd("stats:unique_github", token.sub);
       }
       return session;
     },
