@@ -54,10 +54,6 @@ export default async function Home() {
             connect with github
           </button>
         </form>
-
-        <p className="text-sm text-neutral-500">
-          we only need access to create a pr to your profile repo.
-        </p>
       </div>
     </main>
   );
