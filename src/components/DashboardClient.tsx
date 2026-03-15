@@ -28,14 +28,7 @@ export default function DashboardClient() {
   const [creating, setCreating] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [repoOpen, setRepoOpen] = useState(false);
-  const [editorLinks, setEditorLinks] = useState<{
-    readmeUrl: string;
-    workflowUrl: string;
-    readmeExists: boolean;
-    workflowExists: boolean;
-    badgeSnippet: string;
-    readmeContent: string;
-  } | null>(null);
+  const [prUrl, setPrUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,28 +56,10 @@ export default function DashboardClient() {
       .reduce((sum, r) => sum + r.stargazerCount, 0);
   }, [mode, pinnedRepos, publicRepos, selectedRepos]);
 
-  function buildGitHubEditorUrl(
-    login: string,
-    branch: string,
-    filename: string,
-    content: string,
-    exists: boolean
-  ): string {
-    if (exists) {
-      return `https://github.com/${login}/${login}/edit/${branch}/${filename}`;
-    }
-    const params = new URLSearchParams({
-      filename,
-      value: content,
-      message: `Add ${filename.includes("workflow") ? "StarSum workflow" : "StarSum badge"}`,
-    });
-    return `https://github.com/${login}/${login}/new/${branch}?${params.toString()}`;
-  }
-
-  async function handleOpenEditor() {
+  async function handleCreatePR() {
     setCreating(true);
     setError(null);
-    setEditorLinks(null);
+    setPrUrl(null);
 
     const activeRepos =
       mode === "custom"
@@ -93,7 +68,7 @@ export default function DashboardClient() {
             .map((r) => ({ owner: r.owner, name: r.name }))
         : undefined;
 
-    const res = await fetch("/api/github/editor-links", {
+    const res = await fetch("/api/github/create-pr", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -107,28 +82,8 @@ export default function DashboardClient() {
 
     const data = await res.json();
     if (data.success) {
-      const readmeUrl = buildGitHubEditorUrl(
-        data.login,
-        data.defaultBranch,
-        "README.md",
-        data.readmeContent,
-        data.readmeExists
-      );
-      const workflowUrl = buildGitHubEditorUrl(
-        data.login,
-        data.defaultBranch,
-        ".github/workflows/update-stars.yml",
-        data.workflowContent,
-        data.workflowExists
-      );
-      setEditorLinks({
-        readmeUrl,
-        workflowUrl,
-        readmeExists: data.readmeExists,
-        workflowExists: data.workflowExists,
-        badgeSnippet: data.badgeSnippet,
-        readmeContent: data.readmeContent,
-      });
+      setPrUrl(data.prUrl || null);
+      if (data.message) setError(data.message);
     } else {
       setError(data.message || data.error);
     }
@@ -236,59 +191,33 @@ export default function DashboardClient() {
       </section>
 
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
-        {editorLinks ? (
-          <div className="space-y-4">
+        {prUrl ? (
+          <div className="space-y-3">
             <p className="text-neutral-300 font-medium">
-              open in github to review and commit
+              pr created successfully!
             </p>
-            <div className="flex items-center justify-center gap-3">
-              <a
-                href={editorLinks.readmeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-5 py-2.5 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 text-sm"
-              >
-                {editorLinks.readmeExists ? "edit" : "add"} README.md
-              </a>
-            </div>
-            {editorLinks.readmeExists && (
-              <div className="text-left mt-4">
-                <p className="text-xs text-neutral-500 mb-2">
-                  replace your README.md content with:
-                </p>
-                <div className="relative">
-                  <pre className="bg-neutral-950 border border-neutral-800 rounded-lg p-3 text-xs text-neutral-300 overflow-x-auto max-h-48 overflow-y-auto whitespace-pre-wrap">
-                    {editorLinks.readmeContent}
-                  </pre>
-                  <button
-                    onClick={() => navigator.clipboard.writeText(editorLinks.readmeContent)}
-                    className="absolute top-2 right-2 px-2 py-1 text-xs bg-neutral-800 text-neutral-400 rounded border border-neutral-700 hover:text-white hover:border-neutral-500 transition-colors"
-                  >
-                    copy
-                  </button>
-                </div>
-              </div>
-            )}
-            <button
-              onClick={() => setEditorLinks(null)}
-              className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
+            <a
+              href={prUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
             >
-              start over
-            </button>
+              review and merge
+            </a>
           </div>
         ) : (
           <>
             <button
-              onClick={handleOpenEditor}
+              onClick={handleCreatePR}
               disabled={
                 creating || (mode === "custom" && selectedRepos.size === 0)
               }
               className="px-8 py-3 bg-neutral-800 text-white rounded-full font-medium text-base border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {creating ? "preparing..." : "add to profile"}
+              {creating ? "creating pr..." : "add to profile"}
             </button>
             <p className="text-sm text-neutral-500">
-              opens the github editor for your{" "}
+              creates a pr to your{" "}
               <code className="text-neutral-400 bg-neutral-800 px-1.5 py-0.5 rounded text-xs">
                 {session.user.login}/{session.user.login}
               </code>{" "}
