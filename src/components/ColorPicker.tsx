@@ -19,6 +19,7 @@ const COLOR_MAP: Record<string, string> = {
 
 export default function ColorPicker({ value, onChange }: ColorPickerProps) {
   const [customHex, setCustomHex] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
   return (
     <div className="space-y-3">
@@ -48,13 +49,31 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
           type="text"
           placeholder="custom hex (e.g. ff69b4)"
           value={
-            !BADGE_COLORS.some((c) => c.value === value) ? value : customHex
+            isEditing
+              ? customHex
+              : !BADGE_COLORS.some((c) => c.value === value)
+                ? value
+                : customHex
           }
+          onFocus={() => {
+            setIsEditing(true);
+            if (!BADGE_COLORS.some((c) => c.value === value)) {
+              setCustomHex(value);
+            }
+          }}
           onChange={(e) => {
             const hex = e.target.value.replace("#", "");
             setCustomHex(hex);
-            if (/^[0-9a-fA-F]{3,6}$/.test(hex)) {
-              onChange(hex);
+          }}
+          onBlur={() => {
+            setIsEditing(false);
+            if (/^[0-9a-fA-F]{3,6}$/.test(customHex)) {
+              onChange(customHex);
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && /^[0-9a-fA-F]{3,6}$/.test(customHex)) {
+              onChange(customHex);
             }
           }}
           className="px-3 py-1.5 bg-black border border-neutral-800 rounded-md text-sm text-white placeholder-neutral-600 focus:outline-none focus:ring-2 focus:ring-neutral-500 focus:border-transparent w-52 transition-all duration-300"
