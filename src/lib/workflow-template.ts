@@ -87,14 +87,14 @@ function generateAllReposScript(color: string, style: string): string {
 const seen = new Set();
 let totalStars = 0;
 
-// Owned repos
-const ownedRepos = await github.paginate(github.rest.repos.listForUser, {
-  username: '\${{ github.repository_owner }}',
-  type: 'owner',
+// Owned repos (personal + org repos)
+const ownedRepos = await github.paginate(github.rest.repos.listForAuthenticatedUser, {
+  affiliation: 'owner,organization_member',
   per_page: 100,
 });
 
 for (const repo of ownedRepos) {
+  if (repo.private) continue;
   seen.add(repo.full_name);
   totalStars += repo.stargazers_count;
   if (repo.stargazers_count > 0) {

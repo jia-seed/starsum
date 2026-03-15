@@ -53,12 +53,11 @@ export async function fetchPublicRepos(
   const octokit = new Octokit({ auth: token });
   const repoMap = new Map<string, Repo>();
 
-  // Fetch owned repos
+  // Fetch owned repos (personal + org repos the user belongs to)
   let page = 1;
   while (true) {
-    const response = await octokit.request("GET /users/{username}/repos", {
-      username: login,
-      type: "owner",
+    const response = await octokit.request("GET /user/repos", {
+      affiliation: "owner,organization_member",
       per_page: 100,
       page,
       sort: "updated",
@@ -66,6 +65,7 @@ export async function fetchPublicRepos(
     });
 
     for (const repo of response.data) {
+      if (repo.private) continue;
       const key = `${repo.owner.login}/${repo.name}`;
       repoMap.set(key, {
         name: repo.name,
