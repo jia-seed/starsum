@@ -26,6 +26,8 @@ export default function DashboardClient() {
   const [style, setStyle] = useState("for-the-badge");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [repoOpen, setRepoOpen] = useState(false);
   const [prUrl, setPrUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,25 +131,63 @@ export default function DashboardClient() {
         <BadgePreview totalStars={totalStars} color={color} style={style} />
       </section>
 
-      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 space-y-6">
-        <h2 className="text-base font-medium text-neutral-300">customize</h2>
-        <ColorPicker value={color} onChange={setColor} />
-        <StyleSelector value={style} onChange={setStyle} />
+      <section className="rounded-xl border border-neutral-800 bg-neutral-900/50">
+        <button
+          onClick={() => setCustomizeOpen(!customizeOpen)}
+          className="w-full flex items-center justify-between p-6 text-left"
+        >
+          <h2 className="text-base font-medium text-neutral-300">
+            customize <span className="text-neutral-500 font-normal">(optional)</span>
+          </h2>
+          <svg
+            className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${customizeOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {customizeOpen && (
+          <div className="px-6 pb-6 space-y-6">
+            <ColorPicker value={color} onChange={setColor} />
+            <StyleSelector value={style} onChange={setStyle} />
+          </div>
+        )}
       </section>
 
-      <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50">
-        <h2 className="text-base font-medium mb-4 text-neutral-300">
-          repository selection
-        </h2>
-        <RepoSelector
-          mode={mode}
-          onModeChange={setMode}
-          pinnedRepos={pinnedRepos}
-          publicRepos={publicRepos}
-          selectedRepos={selectedRepos}
-          onSelectedChange={setSelectedRepos}
-          loading={loading}
-        />
+      <section className="rounded-xl border border-neutral-800 bg-neutral-900/50">
+        <button
+          onClick={() => setRepoOpen(!repoOpen)}
+          className="w-full flex items-center justify-between p-6 text-left"
+        >
+          <h2 className="text-base font-medium text-neutral-300">
+            repository selection <span className="text-neutral-500 font-normal">(optional)</span>
+          </h2>
+          <svg
+            className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${repoOpen ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {repoOpen && (
+          <div className="px-6 pb-6">
+            <RepoSelector
+              mode={mode}
+              onModeChange={setMode}
+              pinnedRepos={pinnedRepos}
+              publicRepos={publicRepos}
+              selectedRepos={selectedRepos}
+              onSelectedChange={setSelectedRepos}
+              loading={loading}
+            />
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
