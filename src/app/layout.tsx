@@ -10,9 +10,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "StarSum",
+  title: "starsum",
   description:
-    "Aggregate stars from your GitHub repos and display a live-updating badge on your profile README.",
+    "add all your stars from every github repo you own or the pinned ones with one button. it live updates!",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({
