@@ -106,14 +106,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Track recent user who created a PR
+    const userEntry = JSON.stringify({
+      login,
+      stars: totalStars,
+      avatar: session.user.image || "",
+    });
     await redis.zadd("stats:recent_users", {
       score: Date.now(),
-      member: JSON.stringify({
-        login,
-        stars: totalStars,
-        avatar: session.user.image || "",
-      }),
+      member: userEntry,
     });
+    // Update connected user's star count
+    if (session.user.id) {
+      await redis.hset("stats:connected_users", {
+        [session.user.id]: userEntry,
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -143,14 +150,20 @@ export async function POST(request: NextRequest) {
         });
 
         // Track recent user who updated a PR
+        const updatedEntry = JSON.stringify({
+          login,
+          stars: totalStars,
+          avatar: session.user.image || "",
+        });
         await redis.zadd("stats:recent_users", {
           score: Date.now(),
-          member: JSON.stringify({
-            login,
-            stars: totalStars,
-            avatar: session.user.image || "",
-          }),
+          member: updatedEntry,
         });
+        if (session.user.id) {
+          await redis.hset("stats:connected_users", {
+            [session.user.id]: updatedEntry,
+          });
+        }
 
         return NextResponse.json({
           success: true,

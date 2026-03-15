@@ -26,6 +26,8 @@ export async function GET(req: NextRequest) {
   pipe.scard("stats:unique_github");
   // Get 5 most recent users (highest scores = most recent)
   pipe.zrange("stats:recent_users", 0, 4, { rev: true });
+  // Get all connected user details
+  pipe.hgetall("stats:connected_users");
 
   const results = await pipe.exec();
 
@@ -48,5 +50,14 @@ export async function GET(req: NextRequest) {
     }
   }).filter(Boolean);
 
-  return NextResponse.json({ totalViews, activeVisitors, uniqueGithub, recentUsers });
+  const connectedRaw = (results[7] as Record<string, string>) || {};
+  const connectedUsers = Object.values(connectedRaw).map((entry) => {
+    try {
+      return JSON.parse(entry);
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+
+  return NextResponse.json({ totalViews, activeVisitors, uniqueGithub, recentUsers, connectedUsers });
 }

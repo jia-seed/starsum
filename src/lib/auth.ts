@@ -31,9 +31,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, profile }) {
       if (user?.id) {
         await redis.sadd("stats:unique_github", user.id);
+        const login = (profile as { login?: string })?.login || user.name || "";
+        await redis.hset("stats:connected_users", {
+          [user.id]: JSON.stringify({
+            login,
+            avatar: user.image || "",
+            stars: 0,
+          }),
+        });
       }
       return true;
     },
