@@ -1,8 +1,8 @@
-# github star aggregator
+# starsum
 
 aggregate stars from your pinned github repos and display a live-updating badge on your profile readme. one click setup.
 
-**[star-aggregator.jia.build](https://star-aggregator.jia.build)**
+**[starsum.jia.build](https://starsum.jia.build)**
 
 ## how it works
 

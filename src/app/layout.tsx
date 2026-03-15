@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "GitHub Star Aggregator",
+  title: "StarSum",
   description:
     "Aggregate stars from your GitHub repos and display a live-updating badge on your profile README.",
 };

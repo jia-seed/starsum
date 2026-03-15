@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
     const pr = await (octokit as any).createPullRequest({
       owner: login,
       repo: login,
-      title: "Add GitHub Star Aggregator badge",
-      body: `## What this PR does\n\n- Adds a total GitHub stars badge to your profile README\n- Adds a GitHub Action that automatically updates the star count every 6 hours\n\n### Badge Preview\n${badgeMd}\n\n### Files changed\n- \`README.md\` — Added star count badge with comment markers\n- \`.github/workflows/update-stars.yml\` — Auto-update workflow\n\n> **Note:** After merging, go to your repo's **Settings > Actions > General > Workflow permissions** and enable **Read and write permissions** so the Action can push updates.\n\n---\n*Created by [GitHub Star Aggregator](https://star-aggregator.jia.build)*`,
-      head: "add-star-aggregator",
+      title: "Add StarSum badge",
+      body: `## What this PR does\n\n- Adds a total GitHub stars badge to your profile README\n- Adds a GitHub Action that automatically updates the star count every 6 hours\n\n### Badge Preview\n${badgeMd}\n\n### Files changed\n- \`README.md\` — Added star count badge with comment markers\n- \`.github/workflows/update-stars.yml\` — Auto-update workflow\n\n> **Note:** After merging, go to your repo's **Settings > Actions > General > Workflow permissions** and enable **Read and write permissions** so the Action can push updates.\n\n---\n*Created by [StarSum](https://starsum.jia.build)*`,
+      head: "add-starsum",
       base: profileRepo.defaultBranch,
       createWhenEmpty: false,
       changes: [
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
             "README.md": (file: any) => updateReadme(file),
             ".github/workflows/update-stars.yml": workflowYaml,
           },
-          commit: "Add GitHub Star Aggregator badge and workflow",
+          commit: "Add StarSum badge and workflow",
         },
       ],
     });
@@ -115,9 +115,9 @@ export async function POST(request: NextRequest) {
         const pr = await (octokit as any).createPullRequest({
           owner: login,
           repo: login,
-          title: "Update GitHub Star Aggregator badge",
-          body: `Updated star count badge configuration.\n\n*Created by [GitHub Star Aggregator](https://star-aggregator.jia.build)*`,
-          head: "add-star-aggregator",
+          title: "Update StarSum badge",
+          body: `Updated star count badge configuration.\n\n*Created by [StarSum](https://starsum.jia.build)*`,
+          head: "add-starsum",
           base: profileRepo.defaultBranch,
           update: true,
           changes: [
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
                 "README.md": (file: any) => updateReadme(file),
                 ".github/workflows/update-stars.yml": workflowYaml,
               },
-              commit: "Update GitHub Star Aggregator badge and workflow",
+              commit: "Update StarSum badge and workflow",
             },
           ],
         });

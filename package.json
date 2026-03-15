@@ -1,5 +1,5 @@
 {
-  "name": "star-aggregator",
+  "name": "starsum",
   "version": "0.1.0",
   "private": true,
   "scripts": {
