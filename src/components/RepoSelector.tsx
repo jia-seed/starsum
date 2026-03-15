@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface Repo {
   name: string;
   owner: string;
@@ -26,6 +28,8 @@ export default function RepoSelector({
   onSelectedChange,
   loading,
 }: RepoSelectorProps) {
+  const [search, setSearch] = useState("");
+
   function toggleRepo(fullName: string) {
     const next = new Set(selectedRepos);
     if (next.has(fullName)) {
@@ -80,6 +84,16 @@ export default function RepoSelector({
         </button>
       </div>
 
+      {mode === "custom" && (
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="search repos..."
+          className="w-full px-4 py-2 rounded-md border border-neutral-800 bg-black text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors"
+        />
+      )}
+
       {mode === "all" && (
         <div className="flex items-center justify-between p-4 rounded-lg border border-neutral-800 bg-black">
           <div>
@@ -113,18 +127,26 @@ export default function RepoSelector({
             <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
           ))
         ) : (
-          publicRepos.map((repo) => {
-            const fullName = `${repo.owner}/${repo.name}`;
-            return (
-              <RepoCard
-                key={fullName}
-                repo={repo}
-                selectable
-                selected={selectedRepos.has(fullName)}
-                onToggle={() => toggleRepo(fullName)}
-              />
-            );
-          })
+          publicRepos
+            .filter((repo) => {
+              if (!search) return true;
+              const q = search.toLowerCase();
+              const fullName = `${repo.owner}/${repo.name}`.toLowerCase();
+              const desc = (repo.description ?? "").toLowerCase();
+              return fullName.includes(q) || desc.includes(q);
+            })
+            .map((repo) => {
+              const fullName = `${repo.owner}/${repo.name}`;
+              return (
+                <RepoCard
+                  key={fullName}
+                  repo={repo}
+                  selectable
+                  selected={selectedRepos.has(fullName)}
+                  onToggle={() => toggleRepo(fullName)}
+                />
+              );
+            })
         )}
       </div>
     </div>
