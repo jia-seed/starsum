@@ -46,7 +46,6 @@ function timeAgo(timestamp: number): string {
 
 export default function SiteStats() {
   const [stats, setStats] = useState<Stats | null>(null);
-  const [showConnected, setShowConnected] = useState(false);
 
   const fetchStats = useCallback(async () => {
     const vid = getVisitorId();
@@ -82,46 +81,12 @@ export default function SiteStats() {
         <span className="text-white/20">|</span>
         <span>{stats.totalViews.toLocaleString()} views</span>
         <span className="text-white/20">|</span>
-        <span
-          className="relative cursor-default"
-          onMouseEnter={() => setShowConnected(true)}
-          onMouseLeave={() => setShowConnected(false)}
-        >
-          {stats.uniqueGithub} connected
-          {showConnected && stats.connectedUsers.length > 0 && (
-            <div className="absolute top-full right-0 mt-2 rounded-xl bg-neutral-900/95 border border-white/10 px-3 py-2.5 backdrop-blur-sm text-xs text-white/60 space-y-2 min-w-[220px]">
-              {stats.connectedUsers.map((user) => (
-                <a
-                  key={user.login}
-                  href={`https://github.com/${user.login}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 hover:text-white/80 transition-colors"
-                >
-                  {user.avatar && (
-                    <img
-                      src={user.avatar}
-                      alt={user.login}
-                      className="w-4 h-4 rounded-full flex-shrink-0"
-                    />
-                  )}
-                  <span className="text-white/50 truncate">{user.login}</span>
-                  <span className="text-white/25 ml-auto flex-shrink-0 whitespace-nowrap">
-                    {user.connectedAt ? timeAgo(user.connectedAt) : ""}
-                  </span>
-                </a>
-              ))}
-            </div>
-          )}
-        </span>
+        <span>{stats.uniqueGithub} connected</span>
       </div>
 
-      {stats.recentUsers.length > 0 && (
-        <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2 backdrop-blur-sm text-xs text-white/60 space-y-1.5">
-          <p className="text-white/30 text-[10px] uppercase tracking-wider">
-            recent
-          </p>
-          {stats.recentUsers.map((user) => (
+      {stats.connectedUsers.length > 0 && (
+        <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 backdrop-blur-sm text-xs text-white/60 space-y-2 min-w-[200px]">
+          {stats.connectedUsers.map((user) => (
             <a
               key={user.login}
               href={`https://github.com/${user.login}`}
@@ -133,11 +98,13 @@ export default function SiteStats() {
                 <img
                   src={user.avatar}
                   alt={user.login}
-                  className="w-4 h-4 rounded-full"
+                  className="w-4 h-4 rounded-full flex-shrink-0"
                 />
               )}
-              <span className="text-white/50">@{user.login}</span>
-              <span className="text-yellow-500/70">{user.stars.toLocaleString()}</span>
+              <span className="text-white/50 truncate">{user.login}</span>
+              <span className="text-white/25 ml-auto flex-shrink-0 whitespace-nowrap">
+                {user.connectedAt ? timeAgo(user.connectedAt) : ""}
+              </span>
             </a>
           ))}
         </div>
