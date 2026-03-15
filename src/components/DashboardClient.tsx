@@ -128,7 +128,7 @@ export default function DashboardClient() {
         <h2 className="text-base font-medium mb-4 text-neutral-300">
           badge preview
         </h2>
-        <BadgePreview totalStars={totalStars} color={color} style={style} />
+        <BadgePreview totalStars={totalStars} color={color} style={style} mode={mode} />
       </section>
 
       <section className="rounded-xl border border-neutral-800 bg-neutral-900/50">

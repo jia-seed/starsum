@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const badgeMd = generateBadgeMarkdown(totalStars, color, style);
+  const badgeMd = generateBadgeMarkdown(totalStars, color, style, mode);
   const workflowYaml = generateWorkflow({ mode, color, style, repos });
   const octokit = getOctokit(token);
 

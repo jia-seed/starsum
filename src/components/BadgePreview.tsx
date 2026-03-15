@@ -7,14 +7,16 @@ interface BadgePreviewProps {
   totalStars: number;
   color: string;
   style: string;
+  mode?: "pinned" | "all" | "custom";
 }
 
 export default function BadgePreview({
   totalStars,
   color,
   style,
+  mode,
 }: BadgePreviewProps) {
-  const badgeUrl = generateBadgeUrl(totalStars, color, style);
+  const badgeUrl = generateBadgeUrl(totalStars, color, style, mode);
   const markdown = `![Total Stars](${badgeUrl})`;
   const [copied, setCopied] = useState(false);
 

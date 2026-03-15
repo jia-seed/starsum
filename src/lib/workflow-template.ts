@@ -103,7 +103,7 @@ console.log(\`total across \${allRepos.length} repos: \${totalStars}\`);
 let readme = fs.readFileSync('README.md', 'utf8');
 readme = readme.replace(
   /<!--STARS_START-->[\\s\\S]*?<!--STARS_END-->/,
-  \`<!--STARS_START-->\\n![Total Stars](https://img.shields.io/badge/total__stars-\${totalStars}-${color}?style=${style}&logo=github)\\n<!--STARS_END-->\`
+  \`<!--STARS_START-->\\n![Total Stars](https://img.shields.io/badge/Total__Stars__Across__Owned__Repos-\${totalStars}-${color}?style=${style}&logo=github)\\n<!--STARS_END-->\`
 );
 fs.writeFileSync('README.md', readme);`;
 }

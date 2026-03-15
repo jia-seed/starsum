@@ -1,17 +1,20 @@
 export function generateBadgeUrl(
   totalStars: number,
   color: string,
-  style: string
+  style: string,
+  mode?: "pinned" | "all" | "custom"
 ): string {
-  return `https://img.shields.io/badge/total__stars-${totalStars}-${color}?style=${style}&logo=github`;
+  const label = mode === "all" ? "Total__Stars__Across__Owned__Repos" : "total__stars";
+  return `https://img.shields.io/badge/${label}-${totalStars}-${color}?style=${style}&logo=github`;
 }
 
 export function generateBadgeMarkdown(
   totalStars: number,
   color: string,
-  style: string
+  style: string,
+  mode?: "pinned" | "all" | "custom"
 ): string {
-  const url = generateBadgeUrl(totalStars, color, style);
+  const url = generateBadgeUrl(totalStars, color, style, mode);
   return `![Total Stars](${url})`;
 }
 
