@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useMemo } from "react";
+
 interface Repo {
   name: string;
   owner: string;
@@ -26,6 +28,19 @@ export default function RepoSelector({
   onSelectedChange,
   loading,
 }: RepoSelectorProps) {
+  const [search, setSearch] = useState("");
+
+  const filteredRepos = useMemo(() => {
+    if (!search.trim()) return publicRepos;
+    const q = search.toLowerCase();
+    return publicRepos.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.owner.toLowerCase().includes(q) ||
+        r.description?.toLowerCase().includes(q)
+    );
+  }, [publicRepos, search]);
+
   function toggleRepo(fullName: string) {
     const next = new Set(selectedRepos);
     if (next.has(fullName)) {
@@ -96,6 +111,16 @@ export default function RepoSelector({
         </div>
       )}
 
+      {mode === "custom" && (
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="search repos..."
+          className="w-full px-3 py-2 rounded-lg border border-neutral-800 bg-black text-sm text-neutral-200 placeholder-neutral-600 focus:outline-none focus:border-neutral-600 transition-colors duration-300"
+        />
+      )}
+
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {mode === "pinned" ? (
           pinnedRepos.length === 0 ? (
@@ -113,7 +138,7 @@ export default function RepoSelector({
             <RepoCard key={`${repo.owner}/${repo.name}`} repo={repo} />
           ))
         ) : (
-          publicRepos.map((repo) => {
+          filteredRepos.map((repo) => {
             const fullName = `${repo.owner}/${repo.name}`;
             return (
               <RepoCard
