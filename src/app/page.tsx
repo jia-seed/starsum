@@ -1,5 +1,6 @@
 import { auth, signIn } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Image from "next/image";
 
 export default async function Home() {
   const session = await auth();
@@ -8,9 +9,17 @@ export default async function Home() {
   return (
     <main className="flex flex-col items-center justify-center min-h-screen px-4">
       <div className="max-w-2xl text-center space-y-8">
-        <h1 className="text-5xl font-medium tracking-tight">
-          starsum
-        </h1>
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="/logo.png"
+            alt="StarSum"
+            width={80}
+            height={80}
+          />
+          <h1 className="text-5xl font-medium tracking-tight">
+            starsum
+          </h1>
+        </div>
         <p className="text-lg text-text-muted max-w-lg mx-auto leading-relaxed">
           aggregate stars from your pinned repos. display a live-updating badge
           on your github profile. set it up in 30 seconds.
