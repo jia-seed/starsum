@@ -28,13 +28,15 @@ export default function BadgePreview({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={badgeUrl}
-        alt={`Total Stars: ${totalStars.toLocaleString()}`}
-        className="h-8"
-        key={badgeUrl}
-      />
+      <div className="min-h-[48px] flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={badgeUrl}
+          alt={`Total Stars: ${totalStars.toLocaleString()}`}
+          className={style === "for-the-badge" ? "h-8" : "h-5"}
+          key={badgeUrl}
+        />
+      </div>
       <div className="flex items-center gap-2 max-w-full">
         <code className="text-xs text-neutral-500 bg-neutral-800 px-4 py-2 rounded-lg break-all block text-center border border-neutral-700 font-mono">
           {markdown}

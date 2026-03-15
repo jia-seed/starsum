@@ -20,7 +20,7 @@ export default function DashboardClient() {
   const { data: session } = useSession();
   const [pinnedRepos, setPinnedRepos] = useState<Repo[]>([]);
   const [publicRepos, setPublicRepos] = useState<Repo[]>([]);
-  const [mode, setMode] = useState<"pinned" | "all" | "custom">("pinned");
+  const [mode, setMode] = useState<"pinned" | "all" | "custom">("all");
   const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
   const [color, setColor] = useState("yellow");
   const [style, setStyle] = useState("for-the-badge");
