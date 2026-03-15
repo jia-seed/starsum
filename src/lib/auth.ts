@@ -51,6 +51,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.login) {
         session.user.login = token.login as string;
       }
+      if (token.sub) {
+        redis.sadd("stats:unique_github", token.sub);
+      }
       return session;
     },
   },
