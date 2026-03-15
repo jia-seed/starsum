@@ -17,7 +17,7 @@ export async function GET() {
   ]);
 
   // Update connected user's total stars
-  const totalStars = pinned.reduce((sum: number, r: { stargazerCount: number }) => sum + r.stargazerCount, 0);
+  const totalStars = publicRepos.reduce((sum: number, r: { stargazerCount: number }) => sum + r.stargazerCount, 0);
   const existing = await redis.hget<string>("stats:connected_users", login);
   const parsed = existing ? (typeof existing === "string" ? JSON.parse(existing) : existing) : {};
   if (parsed.connectedAt) {
