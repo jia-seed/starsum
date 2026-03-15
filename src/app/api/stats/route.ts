@@ -26,9 +26,6 @@ export async function GET(req: NextRequest) {
   pipe.scard("stats:unique_github");
   // Get 5 most recent users (highest scores = most recent)
   pipe.zrange("stats:recent_users", 0, 4, { rev: true });
-  // Get all connected user details
-  pipe.hgetall("stats:connected_users");
-
   const results = await pipe.exec();
 
   // If SET NX succeeded (returned "OK"), increment total views
@@ -50,10 +47,11 @@ export async function GET(req: NextRequest) {
     }
   }).filter(Boolean);
 
-  const connectedRaw = (results[7] as Record<string, string>) || {};
+  // Fetch connected users outside pipeline (hgetall returns parsed object)
+  const connectedRaw = await redis.hgetall<Record<string, string>>("stats:connected_users") || {};
   const connectedUsers = Object.values(connectedRaw).map((entry) => {
     try {
-      return JSON.parse(entry);
+      return typeof entry === "string" ? JSON.parse(entry) : entry;
     } catch {
       return null;
     }
