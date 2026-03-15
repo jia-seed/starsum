@@ -28,7 +28,8 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
           <button
             key={color.value}
             onClick={() => onChange(color.value)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-300 border ${
+            title={color.name}
+            className={`w-8 h-8 rounded-full transition-all duration-300 border ${
               value === color.value
                 ? "ring-2 ring-neutral-500 ring-offset-2 ring-offset-black border-transparent"
                 : "border-transparent hover:opacity-80"
@@ -38,13 +39,8 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
                 /^[0-9a-fA-F]{6}$/.test(color.value)
                   ? `#${color.value}`
                   : COLOR_MAP[color.value] || color.value,
-              color: ["yellow", "orange", "brightgreen"].includes(color.value)
-                ? "black"
-                : "white",
             }}
-          >
-            {color.name}
-          </button>
+          />
         ))}
       </div>
       <div className="flex items-center gap-2">
