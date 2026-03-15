@@ -45,7 +45,9 @@ export async function GET(req: NextRequest) {
     } catch {
       return null;
     }
-  }).filter(Boolean);
+  }).filter(Boolean).sort((a: { connectedAt?: number }, b: { connectedAt?: number }) =>
+    (b.connectedAt || 0) - (a.connectedAt || 0)
+  );
   const uniqueGithub = connectedUsers.length;
   const recentUsersRaw = (results[6] as string[]) || [];
   const recentUsers = recentUsersRaw.map((entry) => {
