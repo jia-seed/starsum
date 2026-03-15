@@ -250,14 +250,6 @@ export default function DashboardClient() {
               >
                 {editorLinks.readmeExists ? "edit" : "add"} README.md
               </a>
-              <a
-                href={editorLinks.workflowUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-5 py-2.5 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 text-sm"
-              >
-                {editorLinks.workflowExists ? "edit" : "add"} workflow
-              </a>
             </div>
             {editorLinks.readmeExists && (
               <div className="text-left mt-4">
