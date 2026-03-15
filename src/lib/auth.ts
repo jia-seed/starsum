@@ -1,5 +1,6 @@
 import NextAuth, { type DefaultSession } from "next-auth";
 import GitHub from "next-auth/providers/github";
+import { redis } from "@/lib/redis";
 
 declare module "next-auth" {
   interface Session {
@@ -30,6 +31,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user }) {
+      if (user?.id) {
+        await redis.sadd("stats:unique_github", user.id);
+      }
+      return true;
+    },
     async jwt({ token, account, profile }) {
       if (account) {
         token.accessToken = account.access_token;

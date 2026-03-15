@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getOctokit, checkProfileRepo, createProfileRepo } from "@/lib/github";
 import { generateWorkflow } from "@/lib/workflow-template";
 import { generateBadgeMarkdown } from "@/lib/utils";
+import { redis } from "@/lib/redis";
 
 interface CreatePRRequest {
   mode: "pinned" | "all" | "custom";
@@ -104,6 +105,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Track recent user who created a PR
+    await redis.zadd("stats:recent_users", {
+      score: Date.now(),
+      member: JSON.stringify({
+        login,
+        stars: totalStars,
+        avatar: session.user.image || "",
+      }),
+    });
+
     return NextResponse.json({
       success: true,
       prUrl: pr.data.html_url,
@@ -129,6 +140,16 @@ export async function POST(request: NextRequest) {
               commit: "Update StarSum badge and workflow",
             },
           ],
+        });
+
+        // Track recent user who updated a PR
+        await redis.zadd("stats:recent_users", {
+          score: Date.now(),
+          member: JSON.stringify({
+            login,
+            stars: totalStars,
+            avatar: session.user.image || "",
+          }),
         });
 
         return NextResponse.json({

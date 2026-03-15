@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import SessionProvider from "@/components/SessionProvider";
+import { Analytics } from "@vercel/analytics/react";
+import SiteStats from "@/components/SiteStats";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -29,7 +31,11 @@ export default function RootLayout({
         className={`${inter.variable} antialiased bg-black text-white min-h-screen`}
         style={{ fontFamily: "var(--font-inter), system-ui, sans-serif" }}
       >
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <SiteStats />
+          {children}
+        </SessionProvider>
+        <Analytics />
       </body>
     </html>
   );
