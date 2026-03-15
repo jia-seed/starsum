@@ -32,7 +32,7 @@ export default function BadgePreview({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={badgeUrl}
-          alt={`Total Stars: ${totalStars}`}
+          alt={`Total Stars: ${totalStars.toLocaleString()}`}
           className={style === "for-the-badge" ? "h-8" : "h-5"}
           key={badgeUrl}
         />

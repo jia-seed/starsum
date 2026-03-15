@@ -5,7 +5,7 @@ export function generateBadgeUrl(
   mode?: "pinned" | "all" | "custom"
 ): string {
   const label = "total__stars";
-  return `https://img.shields.io/badge/${label}-${totalStars}-${color}?style=${style}&logo=github`;
+  return `https://img.shields.io/badge/${label}-${totalStars.toLocaleString()}-${color}?style=${style}&logo=github`;
 }
 
 export function generateBadgeMarkdown(

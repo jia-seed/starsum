@@ -182,7 +182,7 @@ export default function DashboardClient() {
           className="w-full flex items-center justify-between p-6 text-left"
         >
           <h2 className="text-base font-medium text-neutral-300">
-            customize <span className="text-neutral-500 font-normal">(optional)</span>
+            customize
           </h2>
           <svg
             className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${customizeOpen ? "rotate-180" : ""}`}
@@ -208,7 +208,7 @@ export default function DashboardClient() {
           className="w-full flex items-center justify-between p-6 text-left"
         >
           <h2 className="text-base font-medium text-neutral-300">
-            repository selection <span className="text-neutral-500 font-normal">(optional)</span>
+            repository selection
           </h2>
           <svg
             className={`w-5 h-5 text-neutral-500 transition-transform duration-200 ${repoOpen ? "rotate-180" : ""}`}
