@@ -27,15 +27,15 @@ export default function DashboardClient() {
   const [style, setStyle] = useState("for-the-badge");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [committing, setCommitting] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [repoOpen, setRepoOpen] = useState(false);
   const [diffData, setDiffData] = useState<{
     originalReadme: string;
     readmeContent: string;
     workflowContent: string;
+    login: string;
+    defaultBranch: string;
   } | null>(null);
-  const [commitUrl, setCommitUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extraRepos, setExtraRepos] = useState<Repo[]>([]);
 
@@ -92,7 +92,6 @@ export default function DashboardClient() {
     setCreating(true);
     setError(null);
     setDiffData(null);
-    setCommitUrl(null);
 
     const activeRepos =
       mode === "custom"
@@ -125,6 +124,8 @@ export default function DashboardClient() {
         originalReadme: data.originalReadme || "",
         readmeContent: data.readmeContent,
         workflowContent: data.workflowContent,
+        login: data.login,
+        defaultBranch: data.defaultBranch,
       });
     } else {
       setError(data.message || data.error);
@@ -132,29 +133,6 @@ export default function DashboardClient() {
     setCreating(false);
   }
 
-  async function handleCommit() {
-    if (!diffData) return;
-    setCommitting(true);
-    setError(null);
-
-    const res = await fetch("/api/github/commit-readme", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        readmeContent: diffData.readmeContent,
-        workflowContent: diffData.workflowContent,
-      }),
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      setCommitUrl(data.commitUrl);
-      setDiffData(null);
-    } else {
-      setError(data.message || data.error);
-    }
-    setCommitting(false);
-  }
 
   if (!session) return null;
 
@@ -261,43 +239,21 @@ export default function DashboardClient() {
       </section>
 
       <section className="rounded-xl p-6 border border-neutral-800 bg-neutral-900/50 text-center space-y-4">
-        {commitUrl ? (
-          <div className="space-y-3">
-            <a
-              href={commitUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
-            >
-              view changes on github
-            </a>
-            <p className="text-sm text-neutral-500">
-              badge committed to your profile repo
-            </p>
-            <button
-              onClick={() => {
-                setCommitUrl(null);
-                setDiffData(null);
-              }}
-              className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
-            >
-              start over
-            </button>
-          </div>
-        ) : diffData ? (
+        {diffData ? (
           <div className="space-y-4">
             <DiffPreview
               original={diffData.originalReadme}
               updated={diffData.readmeContent}
             />
             <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={handleCommit}
-                disabled={committing}
-                className="px-6 py-3 bg-green-900/40 text-green-300 rounded-full font-medium border border-green-700/40 hover:bg-green-800/40 hover:border-green-600/40 transition-all duration-300 disabled:opacity-40"
+              <a
+                href={`https://github.com/${diffData.login}/${diffData.login}/edit/${diffData.defaultBranch}/README.md`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
               >
-                {committing ? "committing..." : "commit to github"}
-              </button>
+                commit to github
+              </a>
               <button
                 onClick={() => setDiffData(null)}
                 className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
