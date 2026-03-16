@@ -27,6 +27,7 @@ export default function DashboardClient() {
   const [style, setStyle] = useState("for-the-badge");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [committing, setCommitting] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [repoOpen, setRepoOpen] = useState(false);
   const [diffData, setDiffData] = useState<{
@@ -133,6 +134,29 @@ export default function DashboardClient() {
     setCreating(false);
   }
 
+  async function handleCommit() {
+    if (!diffData) return;
+    setCommitting(true);
+    setError(null);
+
+    const res = await fetch("/api/github/commit-readme", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        readmeContent: diffData.readmeContent,
+        workflowContent: diffData.workflowContent,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      window.open(data.commitUrl, "_blank");
+      setDiffData(null);
+    } else {
+      setError(data.message || data.error);
+    }
+    setCommitting(false);
+  }
 
   if (!session) return null;
 
@@ -246,14 +270,13 @@ export default function DashboardClient() {
               updated={diffData.readmeContent}
             />
             <div className="flex items-center justify-center gap-3">
-              <a
-                href={`https://github.com/${diffData.login}/${diffData.login}/edit/${diffData.defaultBranch}/README.md`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
+              <button
+                onClick={handleCommit}
+                disabled={committing}
+                className="px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 disabled:opacity-40"
               >
-                commit to github
-              </a>
+                {committing ? "committing..." : "commit to github"}
+              </button>
               <button
                 onClick={() => setDiffData(null)}
                 className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
