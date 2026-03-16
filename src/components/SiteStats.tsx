@@ -46,6 +46,7 @@ function timeAgo(timestamp: number): string {
 
 export default function SiteStats() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [showConnected, setShowConnected] = useState(true);
 
   const fetchStats = useCallback(async () => {
     const vid = getVisitorId();
@@ -81,10 +82,24 @@ export default function SiteStats() {
         <span className="text-white/20">|</span>
         <span>{stats.totalViews.toLocaleString()} views</span>
         <span className="text-white/20">|</span>
-        <span>{stats.uniqueGithub} connected</span>
+        <button
+          onClick={() => setShowConnected(!showConnected)}
+          className="hover:text-white/80 transition-colors"
+        >
+          {stats.uniqueGithub} connected
+          <svg
+            className={`inline-block w-3 h-3 ml-1 transition-transform duration-200 ${showConnected ? "rotate-180" : ""}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
       </div>
 
-      {stats.connectedUsers.length > 0 && (
+      {showConnected && stats.connectedUsers.length > 0 && (
         <div className="rounded-xl bg-white/5 border border-white/10 px-3 py-2.5 backdrop-blur-sm text-xs text-white/60 space-y-2 min-w-[200px]">
           {stats.connectedUsers.map((user) => (
             <a
