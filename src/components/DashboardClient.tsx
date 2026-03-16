@@ -37,6 +37,7 @@ export default function DashboardClient() {
     login: string;
     defaultBranch: string;
   } | null>(null);
+  const [showCommitModal, setShowCommitModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [extraRepos, setExtraRepos] = useState<Repo[]>([]);
 
@@ -151,6 +152,7 @@ export default function DashboardClient() {
     const data = await res.json();
     if (data.success) {
       window.open(data.commitUrl, "_blank");
+      setShowCommitModal(false);
       setDiffData(null);
     } else {
       setError(data.message || data.error);
@@ -271,11 +273,10 @@ export default function DashboardClient() {
             />
             <div className="flex items-center justify-center gap-3">
               <button
-                onClick={handleCommit}
-                disabled={committing}
-                className="px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300 disabled:opacity-40"
+                onClick={() => setShowCommitModal(true)}
+                className="px-6 py-3 bg-neutral-800 text-white rounded-full font-medium border border-neutral-600 hover:bg-neutral-700 hover:border-neutral-500 transition-all duration-300"
               >
-                {committing ? "committing..." : "commit to github"}
+                view preview before committing
               </button>
               <button
                 onClick={() => setDiffData(null)}
@@ -308,6 +309,109 @@ export default function DashboardClient() {
           </>
         )}
       </section>
+      {showCommitModal && diffData && (() => {
+        const newLines = diffData.readmeContent.split("\n");
+        const oldLines = diffData.originalReadme.split("\n");
+        const changedLineNums = new Set<number>();
+        if (!diffData.originalReadme) {
+          newLines.forEach((_, i) => changedLineNums.add(i));
+        } else {
+          let firstDiff = 0;
+          while (
+            firstDiff < oldLines.length &&
+            firstDiff < newLines.length &&
+            oldLines[firstDiff] === newLines[firstDiff]
+          ) {
+            firstDiff++;
+          }
+          let oldEnd = oldLines.length - 1;
+          let newEnd = newLines.length - 1;
+          while (
+            oldEnd > firstDiff &&
+            newEnd > firstDiff &&
+            oldLines[oldEnd] === newLines[newEnd]
+          ) {
+            oldEnd--;
+            newEnd--;
+          }
+          for (let i = firstDiff; i <= newEnd; i++) {
+            changedLineNums.add(i);
+          }
+        }
+        return (
+          <div
+            className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowCommitModal(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setShowCommitModal(false);
+            }}
+          >
+            <div className="bg-neutral-900 border border-neutral-700 rounded-xl w-full max-w-3xl max-h-[85vh] flex flex-col">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800">
+                <div className="flex items-center gap-2 text-sm text-neutral-400 font-mono">
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  README.md
+                </div>
+                <button
+                  onClick={() => setShowCommitModal(false)}
+                  className="text-neutral-500 hover:text-white transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="overflow-y-auto flex-1 text-xs font-mono leading-relaxed">
+                {newLines.map((line, i) => (
+                  <div
+                    key={i}
+                    className={`px-4 py-px whitespace-pre ${
+                      changedLineNums.has(i)
+                        ? "bg-green-500/15 text-green-300"
+                        : "text-neutral-500"
+                    }`}
+                  >
+                    <span className="inline-block w-8 text-right select-none opacity-30 mr-3">
+                      {i + 1}
+                    </span>
+                    {line || "\u00A0"}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-neutral-800">
+                {error && <p className="text-red-400 text-sm mr-auto">{error}</p>}
+                <button
+                  onClick={() => setShowCommitModal(false)}
+                  className="text-sm text-neutral-500 hover:text-white transition-colors duration-300"
+                >
+                  cancel
+                </button>
+                <button
+                  onClick={handleCommit}
+                  disabled={committing}
+                  className="px-6 py-2.5 bg-green-600 text-white rounded-full font-medium text-sm hover:bg-green-500 transition-all duration-300 disabled:opacity-40"
+                >
+                  {committing ? "committing..." : "confirm commit"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </main>
   );
 }
